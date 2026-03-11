@@ -1,1 +1,1 @@
-export const DB_NAME = "payment ledger";
+export const DB_NAME = "payment-ledger";
