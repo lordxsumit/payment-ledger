@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Username is required"],
     },
+    fullName: {
+        type: String,
+        required: [true, "Full name is required"],
+    },
     email: {
         type: String,
         required: [true, "Email is required"],
@@ -41,7 +45,8 @@ userSchema.methods.generateAccessToken = function(){
         {
             _id: this._id,
             email: this.email,
-            name: this.name
+            userName: this.userName,
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -58,7 +63,7 @@ userSchema.methods.generateRefreshToken = function(){
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     );
 }

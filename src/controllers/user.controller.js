@@ -28,11 +28,11 @@ const generateAccessAndRefreshToken = async (userID) => {
  */
 const registerUser = asyncHandler(async (req, res) => {
     // get user detail from the frontend
-    const {userName, email, password} = req.body;
+    const {userName, fullName, email, password} = req.body;
 
     // validation - not empty
     if(
-        [userName, email, password].some((field) => field?.trim() === "")
+        [userName, fullName, email, password].some((field) => field?.trim() === "")
     ){
         throw new ApiError(400, "All fields are required")
     }
@@ -48,6 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // create user object - create entry in db
     const User = await user.create({
         userName,
+        fullName,
         email,
         password
     })
@@ -76,12 +77,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const User = await user.findOne({
         $or: [{userName}, {email}]
-    })
+    }).select("+password")
     if(!User){
         throw new ApiError(404, "User not found or doesn't exists!")
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password)
+    const isPasswordValid = await User.isPasswordCorrect(password)
     if(!isPasswordValid){
         throw new ApiError(401, "User credentials not correct!")
     }
@@ -97,8 +98,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
     .status(200)
-    .cookie("Access Token", accessToken, options)
-    .cookie("Refresh Token", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
         new ApiResponse(
             200,
@@ -110,7 +111,36 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
+
+const logoutUser = asyncHandler(async (req, res) => {
+    await user.findByIdAndUpdate(
+        req.newUser._id,
+        {
+            $unset: {
+                refreshToken: 1
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new ApiResponse(200, {}, "User logged out successfully!")
+    )
+})
+
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }
