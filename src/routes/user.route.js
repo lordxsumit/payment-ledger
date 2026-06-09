@@ -7,7 +7,7 @@ const router = Router();
 router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 
-// Secured routes
+// Secured routes (because we are using a middleware)
 router.route("/logout").post(verifyJWT, logoutUser)
 
 
