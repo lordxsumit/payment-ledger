@@ -11,9 +11,11 @@ app.use(cookieParser())
 // Routes import
 import userRouter from './routes/user.route.js'
 import accountRouter from './routes/account.route.js'
+import transactionRouter from './routes/transaction.route.js'
 
 // routes declaration
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/accounts", accountRouter)
+app.use("/api/v1/transactions", transactionRouter)
 
 export {app}
